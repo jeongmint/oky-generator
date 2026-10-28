@@ -18,6 +18,6 @@ PoC stage: single front image → low-poly GLB via TripoSR. Multi-view (front/si
 ## Roadmap
 
 - [x] Single front image → GLB (TripoSR)
-- [ ] Multi-view (front/side/back) via InstantMesh
+- [x] Multi-view (front/side/back) via InstantMesh — implemented, not yet verified on the CUDA box
 - [ ] High-poly post-processing (Subdivision + Multires + displacement bake)
 - [ ] Persistent backend daemon (avoid model reload per request)

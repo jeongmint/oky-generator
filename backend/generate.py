@@ -89,7 +89,7 @@ def main(
         scene_codes = model([image], device=device)
 
     typer.echo(f"[oky] extracting mesh @ resolution={mc_resolution} ...")
-    meshes = model.extract_mesh(scene_codes, resolution=mc_resolution)
+    meshes = model.extract_mesh(scene_codes, has_vertex_color=True, resolution=mc_resolution)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     meshes[0].export(output.as_posix())

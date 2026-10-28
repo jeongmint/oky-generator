@@ -59,6 +59,49 @@ Sanity check:
 
 The log should print `device=mps`. If MPS still errors out, force CPU with `--device cpu`. `--mc-resolution 128` keeps runs light while testing.
 
+Gotchas seen when actually running on an M-series Mac:
+
+- TripoSR has no `setup.py`, so `pip install -e .` fails — run with `PYTHONPATH=../../TripoSR` instead.
+- `torchmcubes` (TripoSR dep) must be built: `uv pip install scikit-build-core cmake ninja pybind11`, then `uv pip install --no-build-isolation git+https://github.com/tatsy/torchmcubes.git`.
+- Pin `transformers==4.35.0`; newer versions rename the DINO weights and model loading fails.
+- `torchmcubes` is CPU-only and TripoSR's fallback in `tsr/models/isosurface.py` only catches `AttributeError`. Widen it to `except (AttributeError, RuntimeError):` or mesh extraction fails with `vol must be a CPU tensor`.
+
+## Multi-view (InstantMesh)
+
+`multiview.py` has two modes:
+
+- `zero123` — front image only. Zero123++ imagines 6 views, InstantMesh reconstructs. Easy, but the side/back are the model's guess.
+- `sheet` — your own front/side/back drawings go straight to InstantMesh. Follows the design; quality depends on how close the drawings are to true orthographic views.
+
+Setup (Windows, after the TripoSR steps above):
+
+```powershell
+cd ..
+git clone https://github.com/TencentARC/InstantMesh.git
+cd backend
+.\.venv\Scripts\pip install diffusers==0.20.2 pytorch-lightning==2.1.2 PyMCubes accelerate git+https://github.com/NVlabs/nvdiffrast/
+```
+
+Run (InstantMesh has no installable package, so put it on `PYTHONPATH`):
+
+```powershell
+$env:PYTHONPATH = "..\InstantMesh"
+.\.venv\Scripts\python multiview.py zero123 --front ..\front.png --output ..\out.glb
+.\.venv\Scripts\python multiview.py sheet --sheet ..\samples\chyla.png --output ..\out.glb --save-views
+```
+
+`sheet` options:
+
+- `--sheet` splits a horizontal front | side | back image automatically; or pass `--front/--side/--back` separately.
+- `--side-azimuth 90` — if the result comes out mirrored front-to-back, try `270`.
+- `--mirror-side` (default on) also feeds the flipped side view as the opposite side. Turn off for asymmetric characters.
+- `--save-views` writes the framed input views next to the GLB, handy for checking the split/scale.
+
+InstantMesh needs CUDA (nvdiffrast) — it does not run on macOS. The view split/framing does, so `--save-views` can be checked on a Mac before the reconstruction step errors out.
+
+Weights (~3 GB for Zero123++ + InstantMesh) download into the HF cache on first run.
+
+
 ## Notes on this box (RTX 4070 Ti, 12GB)
 
 - TripoSR fits comfortably (~6GB VRAM at `--mc-resolution 256`).
