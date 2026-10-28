@@ -1,0 +1,44 @@
+[project]
+name = "oky-backend"
+version = "0.1.0"
+description = "Image-to-3D backend for the oky Blender addon (TripoSR-based)"
+requires-python = ">=3.10,<3.12"
+
+dependencies = [
+    "torch>=2.1.0",
+    "torchvision",
+    "numpy<2.0",
+    "pillow",
+    "rembg[gpu]",
+    "trimesh",
+    "einops",
+    "transformers",
+    "huggingface-hub",
+    "omegaconf",
+    "xatlas",
+    "imageio",
+    "typer",
+]
+
+[tool.uv]
+# Install CUDA-enabled torch wheels on Windows / Linux.
+# On macOS this falls back to the default CPU/MPS build automatically.
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu121", marker = "sys_platform == 'win32' or sys_platform == 'linux'" },
+]
+torchvision = [
+    { index = "pytorch-cu121", marker = "sys_platform == 'win32' or sys_platform == 'linux'" },
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
