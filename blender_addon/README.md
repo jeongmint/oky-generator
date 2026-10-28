@@ -38,7 +38,7 @@ Replace `4.x` with your Blender version.
 1. Open the sidebar in the 3D viewport (`N` key) → **oky** tab.
 2. **Reference images** → set Front (Side/Back are placeholders for the multi-view phase).
 3. **Backend** → point to the backend's Python interpreter and `generate.py`:
-   - Python: `…/backend/.venv/Scripts/python.exe` (Windows) or `…/backend/.venv/bin/python` (Linux/mac CPU test).
+   - Python: `…/backend/.venv/Scripts/python.exe` (Windows) or `…/backend/.venv/bin/python` (macOS / Linux).
    - Script: `…/backend/generate.py`.
 4. Hit **Generate 3D**. The GLB lands in `Output dir` (default: `//oky_out` next to the .blend file) and gets imported into the scene.
 
