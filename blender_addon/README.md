@@ -41,7 +41,7 @@ Replace `4.x` with your Blender version.
    - *Multi-view: imagined (InstantMesh)* — Front only; Zero123++ imagines the rest.
    - *Multi-view: own sheet (InstantMesh)* — Front + Side (+ Back), or tick *Single turnaround sheet* and give one front | side | back image. Also set **InstantMesh** to the cloned repo folder.
 3. **Backend** → point to the backend's Python interpreter and `generate.py`:
-   - Python: `…/backend/.venv/Scripts/python.exe` (Windows) or `…/backend/.venv/bin/python` (Linux/mac CPU test).
+   - Python: `…/backend/.venv/Scripts/python.exe` (Windows) or `…/backend/.venv/bin/python` (macOS / Linux).
    - Script: `…/backend/generate.py`.
 4. Hit **Generate 3D**. The GLB lands in `Output dir` (default: `//oky_out` next to the .blend file) and gets imported into the scene.
 

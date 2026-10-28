@@ -9,7 +9,9 @@ dependencies = [
     "torchvision",
     "numpy<2.0",
     "pillow",
-    "rembg[gpu]",
+    # onnxruntime-gpu has no macOS wheels, so Macs get the CPU build.
+    "rembg[gpu]; sys_platform != 'darwin'",
+    "rembg[cpu]; sys_platform == 'darwin'",
     "trimesh",
     "einops",
     "transformers",

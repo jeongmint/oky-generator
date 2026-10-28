@@ -1,6 +1,6 @@
 # oky backend
 
-Image-to-3D inference service. Tested target: **Windows 11 + RTX 4070 Ti (12GB VRAM) + CUDA 12.1**.
+Image-to-3D inference service. Tested target: **Windows 11 + RTX 4070 Ti (12GB VRAM) + CUDA 12.1**. macOS (Apple Silicon, MPS) is supported but not yet verified.
 
 ## Setup (Windows, one-time)
 
@@ -28,6 +28,43 @@ Sanity check:
 ```
 
 First run downloads the TripoSR weights (~1.5 GB) into the HF cache.
+
+## Setup (macOS, Apple Silicon)
+
+Untested on real hardware yet — expect it to be slower than the 4070 Ti box. Runs on the MPS GPU (unsupported ops fall back to CPU automatically).
+
+```bash
+# 1. Prereqs: Xcode command line tools (TripoSR builds torchmcubes from source) + uv
+xcode-select --install
+brew install uv
+
+# 2. From this directory:
+cd backend
+uv venv --python 3.10
+uv sync
+
+# 3. TripoSR reference code:
+cd ..
+git clone https://github.com/VAST-AI-Research/TripoSR.git
+cd TripoSR
+../backend/.venv/bin/pip install -e .
+cd ../backend
+```
+
+Sanity check:
+
+```bash
+.venv/bin/python generate.py --input ../samples/chyla.png --output ../out.glb
+```
+
+The log should print `device=mps`. If MPS still errors out, force CPU with `--device cpu`. `--mc-resolution 128` keeps runs light while testing.
+
+Gotchas seen when actually running on an M-series Mac:
+
+- TripoSR has no `setup.py`, so `pip install -e .` fails — run with `PYTHONPATH=../../TripoSR` instead.
+- `torchmcubes` (TripoSR dep) must be built: `uv pip install scikit-build-core cmake ninja pybind11`, then `uv pip install --no-build-isolation git+https://github.com/tatsy/torchmcubes.git`.
+- Pin `transformers==4.35.0`; newer versions rename the DINO weights and model loading fails.
+- `torchmcubes` is CPU-only and TripoSR's fallback in `tsr/models/isosurface.py` only catches `AttributeError`. Widen it to `except (AttributeError, RuntimeError):` or mesh extraction fails with `vol must be a CPU tensor`.
 
 ## Multi-view (InstantMesh)
 
@@ -64,9 +101,6 @@ InstantMesh needs CUDA (nvdiffrast) — it does not run on macOS. The view split
 
 Weights (~3 GB for Zero123++ + InstantMesh) download into the HF cache on first run.
 
-## macOS (TripoSR only, MPS)
-
-`rembg[gpu]` has no macOS wheel, so skip `uv sync` and install deps by hand into the venv (`rembg` + `onnxruntime` instead of `rembg[gpu]`, plus `transformers==4.35.0`, which TripoSR's weights need). Then run with `PYTHONPATH=../../TripoSR PYTORCH_ENABLE_MPS_FALLBACK=1`. TripoSR's `tsr/models/isosurface.py` also needs `except AttributeError` widened to `except (AttributeError, RuntimeError)` so marching cubes falls back to CPU.
 
 ## Notes on this box (RTX 4070 Ti, 12GB)
 
