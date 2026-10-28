@@ -1,6 +1,6 @@
 # oky backend
 
-Image-to-3D inference service. Tested target: **Windows 11 + RTX 4070 Ti (12GB VRAM) + CUDA 12.1**.
+Image-to-3D inference service. Tested target: **Windows 11 + RTX 4070 Ti (12GB VRAM) + CUDA 12.1**. macOS (Apple Silicon, MPS) is supported but not yet verified.
 
 ## Setup (Windows, one-time)
 
@@ -28,6 +28,36 @@ Sanity check:
 ```
 
 First run downloads the TripoSR weights (~1.5 GB) into the HF cache.
+
+## Setup (macOS, Apple Silicon)
+
+Untested on real hardware yet — expect it to be slower than the 4070 Ti box. Runs on the MPS GPU (unsupported ops fall back to CPU automatically).
+
+```bash
+# 1. Prereqs: Xcode command line tools (TripoSR builds torchmcubes from source) + uv
+xcode-select --install
+brew install uv
+
+# 2. From this directory:
+cd backend
+uv venv --python 3.10
+uv sync
+
+# 3. TripoSR reference code:
+cd ..
+git clone https://github.com/VAST-AI-Research/TripoSR.git
+cd TripoSR
+../backend/.venv/bin/pip install -e .
+cd ../backend
+```
+
+Sanity check:
+
+```bash
+.venv/bin/python generate.py --input ../samples/chyla.png --output ../out.glb
+```
+
+The log should print `device=mps`. If MPS still errors out, force CPU with `--device cpu`. `--mc-resolution 128` keeps runs light while testing.
 
 ## Notes on this box (RTX 4070 Ti, 12GB)
 

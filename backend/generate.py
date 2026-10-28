@@ -6,7 +6,12 @@ Usage:
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
+
+# Let ops MPS doesn't implement fall back to CPU instead of crashing (macOS).
+# Must be set before torch is imported.
+os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
 
 import numpy as np
 import torch
@@ -58,8 +63,10 @@ def main(
     foreground_ratio: float = typer.Option(0.85),
     mc_resolution: int = typer.Option(256, help="Marching cubes resolution (128/256/512)"),
     model_name: str = typer.Option("stabilityai/TripoSR"),
+    device: str = typer.Option("auto", help="auto / cuda / mps / cpu"),
 ) -> None:
-    device = _pick_device()
+    if device == "auto":
+        device = _pick_device()
     typer.echo(f"[oky] device={device}")
 
     # Lazy import — heavy and only needed at runtime.
